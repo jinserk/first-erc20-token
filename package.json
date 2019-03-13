@@ -1,7 +1,7 @@
 {
-  "name": "lmic-token",
+  "name": "eun-token",
   "version": "0.0.1",
-  "description": "MGH LMIC Token",
+  "description": "EUN Token",
   "main": "truffle-config.js",
   "directories": {
     "test": "test"
