@@ -17,6 +17,7 @@ $ Truffle develop
 
 truffle(develop)> compile
 truffle(develop)> migrate
+truffle(develop)> test
 ```
 
 
