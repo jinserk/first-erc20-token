@@ -7,6 +7,7 @@ ERC20 Token implementation with latest version of Truffle Framework and OpenZepp
 - node 10.15.3+
 - npm 6.9.0+
 - openzeppelin-solidity 2.1.3+
+- openzeppelin-test-helpers 0.1.4+
 - truffle 5.0.5+
 
 ## Installation
