@@ -1,6 +1,6 @@
 # ERC20 Token contract example
 
-ERC20 Token implementation with latest version of Truffle Framework and OpenZeppeling-solidity library
+ERC20 Token implementation with latest version of Truffle Framework and OpenZeppelin-solidity library
 
 ## Requirements
 
