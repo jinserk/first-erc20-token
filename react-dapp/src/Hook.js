@@ -31,21 +31,27 @@ export function useInterval(callback, delay) {
   }, [delay]);
 }
 
-export function usePromise(promiseCreator, deps) {
+export function usePromise(promiseCallback, deps) {
+  const savedCallback = useRef();
   const [resolved, setResolved] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Remember the latest callback.
+  useEffect(() => {
+    savedCallback.current = promiseCallback;
+  }, [promiseCallback]);
+
   const process = async () => {
     setLoading(true);
     try {
-      const result = await promiseCreator();
+      const result = await savedCallback.current();
       setResolved(result);
       setError(null);
     } catch (e) {
       console.error(e);
-      setError(e);
       setResolved(null);
+      setError(e);
     }
     setLoading(false);
   };
