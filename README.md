@@ -23,8 +23,16 @@ truffle(develop)> test
 
 ## Running React-dapp
 
+### update the deployed contract's address
+
 ```
 $ cd react-dapp
+$ vi src/ContractConfig.js
+```
+
+### run react server
+
+```
 $ yarn install
 $ yarn start
 ```
