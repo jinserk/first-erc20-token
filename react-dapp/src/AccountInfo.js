@@ -1,15 +1,70 @@
-import Promise from "promise";
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
+import ReactLoading from 'react-loading';
 import { Contract } from "ethers";
 
 import './App.css';
 import ETHInfo from './ETHInfo';
 import EUNTokenInfo from './EUNTokenInfo';
-
+import { usePromise } from './Hook';
 import { Contracts } from './ContractConfig';
 
-function ListContracts(props) {
-  const { context, contracts } = props;
+const checkContracts = async (contracts, context) => {
+  const signer = context.library.getSigner(context.account);
+
+  for (let contract of contracts) {
+    const { abi, address } = contract;
+    contract.instance = new Contract(address, abi, signer);
+    try {
+      let v = await contract.instance.deployed();
+      contract.deployed = v ? true : false;
+    } catch (e) {
+      contract.deployed = false;
+      throw(e);
+    }
+  }
+  return contracts;
+};
+
+export default function AccountInfo(props) {
+  const { context } = props;
+
+  const [loading, resolved, error] = usePromise(() => {
+    return checkContracts(Contracts, context);
+  }, [context]);
+
+  console.log(loading, resolved, error);
+
+  if (loading) return (
+    <div className="App-table">
+      <table width="500">
+      <tbody>
+        <tr>
+          <td>
+            <br />
+            <center><ReactLoading type="spin" color="#000" /></center>
+            <br />
+          </td>
+        </tr>
+      </tbody>
+      </table>
+    </div>
+  );
+
+  const render = () => {
+    if (error || !resolved) return null;
+    const rendered = resolved.filter(contract => {
+      return contract.deployed;
+    }).map((contract, idx) => {
+      return (
+        <tr key={idx}>
+          <td colSpan="3">
+            <EUNTokenInfo context={context} contract={contract} />
+          </td>
+        </tr>
+      );
+    });
+    return rendered;
+  }
 
   return (
     <div className="App-table">
@@ -28,50 +83,10 @@ function ListContracts(props) {
               <ETHInfo context={context} />
             </td>
           </tr>
-          { contracts.current.map((c, i) => {
-              if (c.deployed) {
-                return (
-                  <tr key={i}>
-                    <td colSpan="3">
-                      <EUNTokenInfo context={context} contract={c} />
-                    </td>
-                  </tr>
-                );
-              }
-            })
-          }
-         </tbody>
+          { render() }
+        </tbody>
       </table>
     </div>
   );
-}
-
-export default function AccountInfo(props) {
-  const { context } = props;
-  const contracts = useRef(Contracts);
-
-  const checkContracts = async (cs) => {
-    const promises = cs.current.map(async c => {
-      const { abi, address } = c;
-      c.instance = new Contract(address, abi, context.signer);
-      try {
-        await c.instance.deployed();
-        c.deployed = true;
-      } catch (e) {
-        c.deployed = false;
-        console.error(e);
-      }
-    });
-    await Promise.all(promises);
-    return cs;
-  };
-
-  const [state, setState] = useState(checkContracts(contracts));
-
-  useEffect(() => {
-    setState(checkContracts(contracts));
-  }, [context.signer]);
-
-  return <ListContracts context={context} contracts={contracts} />
 }
 

@@ -12,19 +12,13 @@ const connectors = { MetaMask };
 
 function MyComponent() {
   const context = useWeb3Context();
-  const signer = context.library.getSigner(context.account);
-
-  const myContext = {
-    ...context,
-    signer: signer
-  }
 
   return (
     context.account ? (
       <Fragment>
-        <NetworkInfo context={myContext}/>
+        <NetworkInfo context={context} />
         <br />
-        <AccountInfo context={myContext} />
+        <AccountInfo context={context} />
       </Fragment>
     ) : <AccountUnavailable />
   );
@@ -34,8 +28,9 @@ function MetaMaskComponent() {
   const context = useWeb3Context();
 
   useEffect(() => {
-    if (!context.active)
+    if (!context.active) {
       context.setConnector("MetaMask");
+    }
   }, [context.active]);
 
   return (context.active ? <MyComponent /> : <Web3Unavailable />);

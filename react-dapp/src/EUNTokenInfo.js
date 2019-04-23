@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { utils } from "ethers";
 
 import './App.css';
 import { useInterval } from './Hook';
-import { EUNToken } from './ContractConfig';
 
 function TransferEUN(props) {
-  const { context, setTxModal } = props;
-  const { contract } = context;
+  const { context, contract, setTxModal } = props;
+  const provider = context.library;
 
   const [to, setTo] = useState("");
   const [amount, setAmount] = useState(0);
@@ -20,17 +19,17 @@ function TransferEUN(props) {
         function : transfer
         from : ${context.account}
         to : ${to}
-        amount : ${amount} eun
+        amount : ${amount} EUN
 
         Are you sure to go ahead?`
     );
 
     if (result) {
-      let value = utils.parseUnits(amount, context.decimals);
+      let value = utils.parseUnits(amount, contract.decimals);
       (async function(to, value) {
         try {
-          let resp = await contract.current.transfer(to, value);
-          context.provider.once(resp.hash, receipt => {
+          let resp = await contract.instance.transfer(to, value);
+          provider.once(resp.hash, receipt => {
             console.log(receipt);
             window.alert(`Transaction confirmed!`);
             setTxModal(false);
@@ -76,27 +75,21 @@ export default function EUNTokenInfo(props) {
   const [decimals, setDecimals] = useState(18);
   const [txModal, setTxModal] = useState(false);
 
-  async function getContract() {
+  (async function getContractInfo() {
     try {
       setSymbol(await contract.instance.symbol());
       setDecimals(utils.bigNumberify(await contract.instance.decimals()).toNumber());
+      contract.decimals = decimals;
     } catch (e) {
       console.log(e);
     }
-  }
+  })();
 
   async function fetchBalance() {
     let balance = utils.bigNumberify(await contract.instance.balanceOf(context.account)).toString();
     setBalance(utils.formatUnits(balance, decimals));
   }
-
-  useEffect(() => {
-    getContract();
-  }, [contract]);
-
-  useEffect(() => {
-    fetchBalance();
-  }, [contract, txModal]);
+  fetchBalance();
 
   useInterval(() => {
     fetchBalance();
@@ -129,7 +122,7 @@ export default function EUNTokenInfo(props) {
           <tr>
             <td className="inner-td" colSpan="3">
               <hr />
-              <TransferEUN context={{...context, decimals: decimals}} setTxModal={p => setTxModal(p)}  />
+              <TransferEUN context={context} contract={contract} setTxModal={p => setTxModal(p)}  />
             </td>
           </tr>
           )}

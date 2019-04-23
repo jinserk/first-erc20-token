@@ -6,6 +6,8 @@ import { useInterval } from './Hook';
 
 function TransferETH(props) {
   const { context, setTxModal } = props;
+  const provider = context.library;
+  const signer = provider.getSigner(context.account);
 
   const [to, setTo] = useState("");
   const [amount, setAmount] = useState(0);
@@ -38,8 +40,8 @@ function TransferETH(props) {
 
       (async function(tx) {
         try {
-          let resp = await context.signer.sendTransaction(tx);
-          context.library.once(resp.hash, receipt => {
+          let resp = await signer.sendTransaction(tx);
+          provider.once(resp.hash, receipt => {
             console.log(receipt);
             window.alert(`Transaction confirmed!`);
             setTxModal(false);
